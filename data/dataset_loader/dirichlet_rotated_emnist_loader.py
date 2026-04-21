@@ -33,7 +33,7 @@ def get_dirichlet_rotated_EMNIST_local_datasets(config):
 
     idcs = np.random.permutation(len(data))
     train_idcs, test_idcs = idcs[:200000], idcs[10000:20000]
-    train_labels = data.train_labels.numpy()
+    train_labels = data.targets.numpy()  # train_labels is deprecated, renamed to targets
 
     client_idcs = split_noniid(train_idcs, train_labels, alpha=DIRICHLET_ALPHA, n_clients=config["n_clients"])
 
@@ -56,7 +56,11 @@ def get_dirichlet_rotated_EMNIST_local_datasets(config):
         transformation_function=transforms.Compose([transforms.ToTensor()])
     )
 
-    info = [None for _ in range(config["n_clients"])]
+    # Return test_data (not None) so client.py uses it directly.
+    # When info[i] is None, client.py calls random_split on the LocalDataset,
+    # which returns a plain Subset — stripping transformation_function and
+    # causing PIL images to reach the collator.
+    info = [test_data for _ in range(config["n_clients"])]
     return client_data, info
 
 

@@ -80,7 +80,7 @@ parser.add_argument("--use_scheduler", type=bool, default=False)
 
 # Custom functional-similarity clustering configuration
 parser.add_argument("--custom_warmup_rounds", type=int, default=10)
-parser.add_argument("--custom_similarity_interval", type=int, default=2)
+parser.add_argument("--custom_similarity_interval", type=int, default=2) # this is same as clustering frequency
 parser.add_argument("--custom_similarity_momentum", type=float, default=0.8) # used while updating similarity matrix
 parser.add_argument("--custom_noise_samples", type=int, default=64) # used while sampling random noise data for getting logits
 parser.add_argument("--custom_threshold_std_scale", type=float, default=0.5) # used while threshold calculation

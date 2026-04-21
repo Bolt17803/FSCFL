@@ -39,19 +39,20 @@ def get_dirichlet_rotated_EMNIST_local_datasets(config):
 
     idcs = np.random.permutation(len(data))
     train_idcs, test_idcs = idcs[:200000], idcs[10000:20000]
-    train_labels = data.train_labels.numpy()
+    train_labels = data.targets.numpy()
 
     client_idcs = split_noniid(train_idcs, train_labels, alpha=DIRICHLET_ALPHA, n_clients=config["n_clients"])
 
-    client_data = [LocalDataset(data, idcs, task=config["task"]) for idcs in client_idcs]
-    test_data = LocalDataset(data, test_idcs, transforms.Compose([transforms.ToTensor()]))
-
-    for i, client_datum in enumerate(client_data):
+    client_data = []
+    for i, idcs in enumerate(client_idcs):
         if i < config["n_clients"] // 2:
-            client_datum.transformation_function = transforms.Compose([transforms.RandomRotation((90, 90)),
-                                                                       transforms.ToTensor()])
+            trans = transforms.Compose([transforms.RandomRotation((90, 90)),
+                                        transforms.ToTensor()])
         else:
-            client_datum.transformation_function = transforms.Compose([transforms.ToTensor()])
+            trans = transforms.Compose([transforms.ToTensor()])
+        client_data.append(LocalDataset(data, idcs, transformation_function=trans, task=config["task"]))
+
+    test_data = LocalDataset(data, test_idcs, transforms.Compose([transforms.ToTensor()]))
 
     info = [None for _ in range(config["n_clients"])]
     return client_data, info

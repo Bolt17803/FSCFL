@@ -29,7 +29,13 @@ def split_noniid(train_idcs, train_labels, alpha, n_clients):
 
 def get_dirichlet_rotated_EMNIST_local_datasets(config):
     DIRICHLET_ALPHA = 1.0
-    data = datasets.EMNIST(root="./data/datasets", split="byclass", download=True)
+
+    # Set ToTensor at the dataset level — the standard torchvision pattern.
+    # This guarantees EMNIST.__getitem__ always returns a tensor, so PIL images
+    # can never reach the collator regardless of any wrapper, random_split, or
+    # missing transformation_function.
+    data = datasets.EMNIST(root="./data/datasets", split="byclass", download=True,
+                           transform=transforms.ToTensor())
 
     idcs = np.random.permutation(len(data))
     train_idcs, test_idcs = idcs[:200000], idcs[10000:20000]
@@ -37,29 +43,21 @@ def get_dirichlet_rotated_EMNIST_local_datasets(config):
 
     client_idcs = split_noniid(train_idcs, train_labels, alpha=DIRICHLET_ALPHA, n_clients=config["n_clients"])
 
-    # Build client datasets with transforms at construction time
+    # Per-client rotation is applied on top of the already-tensor output.
+    # RandomRotation works on both PIL Images and tensors (torchvision >= 0.8).
     client_data = []
     for i, c_idcs in enumerate(client_idcs):
         if i < config["n_clients"] // 2:
-            tfm = transforms.Compose([
-                transforms.RandomRotation((90, 90)),
-                transforms.ToTensor()
-            ])
+            tfm = transforms.RandomRotation((90, 90))
         else:
-            tfm = transforms.Compose([transforms.ToTensor()])
+            tfm = None
         client_data.append(LocalDataset(data, c_idcs, transformation_function=tfm, task=config["task"]))
 
-    # Fix: use keyword argument so transform isn't swallowed by `indices`
-    test_data = LocalDataset(
-        data,
-        test_idcs,
-        transformation_function=transforms.Compose([transforms.ToTensor()])
-    )
+    # EMNIST already applies ToTensor via dataset.transform, so no extra transform needed.
+    test_data = LocalDataset(data, test_idcs)
 
-    # Return test_data (not None) so client.py uses it directly.
-    # When info[i] is None, client.py calls random_split on the LocalDataset,
-    # which returns a plain Subset — stripping transformation_function and
-    # causing PIL images to reach the collator.
+    # Return test_data so client.py never hits the random_split path, which returns
+    # a plain Subset and strips transformation_function.
     info = [test_data for _ in range(config["n_clients"])]
     return client_data, info
 

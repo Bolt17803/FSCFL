@@ -31,28 +31,30 @@ def get_dirichlet_rotated_EMNIST_local_datasets(config):
     DIRICHLET_ALPHA = 1.0
     data = datasets.EMNIST(root="./data/datasets", split="byclass", download=True)
 
-    mapp = np.array(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C',
-                     'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                     'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c',
-                     'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-                     'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'], dtype='<U1')
-
     idcs = np.random.permutation(len(data))
     train_idcs, test_idcs = idcs[:200000], idcs[10000:20000]
-    train_labels = data.targets.numpy()
+    train_labels = data.train_labels.numpy()
 
     client_idcs = split_noniid(train_idcs, train_labels, alpha=DIRICHLET_ALPHA, n_clients=config["n_clients"])
 
+    # Build client datasets with transforms at construction time
     client_data = []
-    for i, idcs in enumerate(client_idcs):
+    for i, c_idcs in enumerate(client_idcs):
         if i < config["n_clients"] // 2:
-            trans = transforms.Compose([transforms.RandomRotation((90, 90)),
-                                        transforms.ToTensor()])
+            tfm = transforms.Compose([
+                transforms.RandomRotation((90, 90)),
+                transforms.ToTensor()
+            ])
         else:
-            trans = transforms.Compose([transforms.ToTensor()])
-        client_data.append(LocalDataset(data, idcs, transformation_function=trans, task=config["task"]))
+            tfm = transforms.Compose([transforms.ToTensor()])
+        client_data.append(LocalDataset(data, c_idcs, transformation_function=tfm, task=config["task"]))
 
-    test_data = LocalDataset(data, test_idcs, transforms.Compose([transforms.ToTensor()]))
+    # Fix: use keyword argument so transform isn't swallowed by `indices`
+    test_data = LocalDataset(
+        data,
+        test_idcs,
+        transformation_function=transforms.Compose([transforms.ToTensor()])
+    )
 
     info = [None for _ in range(config["n_clients"])]
     return client_data, info

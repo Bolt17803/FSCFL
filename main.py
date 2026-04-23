@@ -27,6 +27,7 @@ parser.add_argument("--dataset", type=str, default='rotated_mnist_8_angles', cho
                                                                             'rotated_mnist_8_angles',
                                                                             'rotated_mnist_4_angles',
                                                                             'label_permuted_cifar10',
+                                                                            'label_permuted_mnist',
                                                                             'dirichlet_rotated_emnist',
                                                                             'gaussian_linear_regression'])
 

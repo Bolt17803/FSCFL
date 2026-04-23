@@ -20,10 +20,10 @@ Command : python main.py --algorithm FEDAVG --dataset label_permuted_cifar10 --m
 # Experiment execution code for the dataset setting - label permuted MNIST
 
 ### 1. CFLGP 
-Command : python main.py --algorithm CFLGP --dataset label_permuted_mnist --model SimpleLinear --n_clients 128 --n_models 4 --batch_size 100 --learning_rate 0.1 --n_communication_rounds 200 --clustering_period 2 --protocol model_averaging --clustering_termination_threshold 20 --random_seed 0
+Command : python main.py --algorithm CFLGP --dataset label_permuted_mnist --model SimpleLinear --n_clients 128 --n_models 2 --batch_size 100 --learning_rate 0.1 --n_communication_rounds 200 --clustering_period 2 --protocol model_averaging --clustering_termination_threshold 20 --random_seed 0
 
 ### 2. IFCA
-Command : python main.py --algorithm IFCA --dataset label_permuted_mnist --model SimpleLinear --n_clients 128 --n_models 4 --batch_size 100 --learning_rate 0.1 --n_communication_rounds 200 --clustering_period 2 --protocol model_averaging --random_seed 0
+Command : python main.py --algorithm IFCA --dataset label_permuted_mnist --model SimpleLinear --n_clients 128 --n_models 2 --batch_size 100 --learning_rate 0.1 --n_communication_rounds 200 --clustering_period 2 --protocol model_averaging --random_seed 0
 
 ### 3. MADMO
 Command : python main.py --algorithm MADMO --dataset label_permuted_mnist --model SimpleLinear --n_clients 128 --batch_size 100 --learning_rate 0.1 --n_communication_rounds 200 --protocol model_averaging --local_update_epoch 1 --rho 0.1 --random_seed 0

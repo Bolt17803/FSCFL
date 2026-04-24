@@ -37,6 +37,10 @@ def get_label_permuted_mnist_local_datasets_custom_clusters(config):
     N_CLUSTERS = config['n_models']  # Use the n_models parameter directly
     N_CLIENT = config['n_clients']
 
+    print("N_CLIENT", N_CLIENT)
+    print("N_CLUSTERS", N_CLUSTERS)
+    print("N_CLIENT % N_CLUSTERS ==0 ?", N_CLIENT % N_CLUSTERS == 0)
+
     assert N_CLIENT % N_CLUSTERS == 0, \
         f"n_clients ({N_CLIENT}) must be divisible by n_models ({N_CLUSTERS})"
 

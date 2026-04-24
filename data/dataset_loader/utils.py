@@ -34,8 +34,8 @@ def get_datasets(config):
         return get_label_permuted_cifar10_local_datasets(config=config)
     
     elif dataset_name == "label_permuted_mnist":
-        from data.dataset_loader.label_permuted_mnist_loader import get_label_permuted_mnist_local_datasets
-        return get_label_permuted_mnist_local_datasets(config=config)
+        from data.dataset_loader.label_permuted_mnist_loader import get_label_permuted_mnist_local_datasets_custom_clusters
+        return get_label_permuted_mnist_local_datasets_custom_clusters(config=config)
 
 
 def divide_array(labels, n_clients):

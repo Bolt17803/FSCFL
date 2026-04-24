@@ -1,6 +1,8 @@
 
 
-
+# packages to install
+!pip install -q torch torchvision torchaudio tensorboard
+!pip install -q numpy scipy scikit-learn matplotlib seaborn tqdm networkx
 
 # Experiment execution code for the dataset setting - CIFAR-10 and ResNet-18
 

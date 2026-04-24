@@ -92,3 +92,6 @@ class LocalDataset(Subset):
                 image = self.transformation_function(image)
 
         return image, label
+
+    def __getitems__(self, indices):
+        return [self.__getitem__(idx) for idx in indices]

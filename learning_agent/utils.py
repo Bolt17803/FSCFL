@@ -209,6 +209,59 @@ def louvain_cluster_clients(graph, n_clients, random_seed=0):
     return estimated_cluster_ids
 
 
+def visualize_clustering(similarity_matrix, cluster_ids, round_num, save_dir):
+    try:
+        import matplotlib.pyplot as plt
+        import os
+        try:
+            import seaborn as sns
+            has_sns = True
+        except ImportError:
+            has_sns = False
+
+        n_clients = similarity_matrix.shape[0]
+        
+        # Sort clients by their cluster ID
+        sorted_indices = np.argsort(cluster_ids)
+        sorted_cluster_ids = cluster_ids[sorted_indices]
+        
+        # Reorder the similarity matrix
+        reordered_matrix = similarity_matrix[sorted_indices][:, sorted_indices]
+        
+        plt.figure(figsize=(10, 8))
+        
+        if has_sns:
+            ax = sns.heatmap(reordered_matrix, cmap='viridis', vmin=-1.0, vmax=1.0)
+        else:
+            plt.imshow(reordered_matrix, cmap='viridis', vmin=-1.0, vmax=1.0, aspect='auto')
+            plt.colorbar()
+            ax = plt.gca()
+            
+        plt.title(f"Similarity Matrix - Round {round_num}")
+        plt.xlabel("Clients (sorted by cluster)")
+        plt.ylabel("Clients (sorted by cluster)")
+        
+        # Add lines to delineate clusters
+        unique_clusters, counts = np.unique(sorted_cluster_ids, return_counts=True)
+        current_pos = 0
+        for count in counts:
+            current_pos += count
+            if current_pos < n_clients:
+                if has_sns:
+                    ax.axhline(current_pos, color='red', linestyle='--', linewidth=1)
+                    ax.axvline(current_pos, color='red', linestyle='--', linewidth=1)
+                else:
+                    plt.axhline(current_pos - 0.5, color='red', linestyle='--', linewidth=1)
+                    plt.axvline(current_pos - 0.5, color='red', linestyle='--', linewidth=1)
+                    
+        plt.tight_layout()
+        save_path = os.path.join(save_dir, f"similarity_heatmap_round_{round_num}.png")
+        plt.savefig(save_path, dpi=300)
+        plt.close()
+    except ImportError:
+        print("matplotlib is required for visualize_clustering. Skipping visualization.")
+
+
 if __name__ == "__main__":
     # random data
     gradient_profile_matrix = np.random.random_sample(size=(128, 8))

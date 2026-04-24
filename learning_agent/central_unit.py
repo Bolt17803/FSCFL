@@ -4,7 +4,7 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from global_config import global_logger, logging
 from learning_agent.utils import spectral_clustering_and_matching, get_num_cluster, cosine_similarity_matrix, \
-    smooth_similarity_matrix, build_similarity_graph, louvain_cluster_clients
+    smooth_similarity_matrix, build_similarity_graph, louvain_cluster_clients, visualize_clustering
 from learning_agent.system_functions import flatten_tensor, model_averaging, gradient_averaging, copy_weight, \
     encoder_averaging, cnn_averaging
 import time
@@ -91,6 +91,8 @@ class CentralUnit:
         self.cu_model_path = os.path.join(self.model_path, "cu_model")
         self.client_model_path = os.path.join(self.model_path, "client_model")
         self.model_indices_path = os.path.join(self.model_path, "model_indices.npy")
+        self.vis_path = os.path.join(self.results_path_name, self.name, "visualizations")
+        Path(self.vis_path).mkdir(parents=True, exist_ok=True)
         Path(self.data_tracking_path).mkdir(parents=True, exist_ok=True)
         Path(self.log_path).mkdir(parents=True, exist_ok=True)
         fileh = logging.FileHandler(os.path.join(self.log_path, "log.txt"), 'a')
@@ -676,6 +678,13 @@ class CentralUnit:
                     random_seed=0
                 )
                 global_logger.info("cluster ids: {}".format(self.estimated_cluster_ids))
+
+                # visualize_clustering(
+                #     similarity_matrix=self.smoothed_similarity_matrix,
+                #     cluster_ids=self.estimated_cluster_ids,
+                #     round_num=c_round,
+                #     save_dir=self.vis_path
+                # )
 
             if self.smoothed_similarity_matrix is not None:
                 cluster_average_weights, cluster_client_indices = self._get_cluster_average_weights(

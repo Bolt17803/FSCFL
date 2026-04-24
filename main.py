@@ -101,9 +101,12 @@ parser.add_argument("--test", type=bool, default=False)
 args = parser.parse_args()
 config = base_config
 config.update(vars(args))
-config["name"] = (config["name"] + config["algorithm"] + "_" + config["protocol"] + "_" + config["dataset"] + "_"
-                  + config["model"] + "_" + config["task"] + "_b" + str(config["batch_size"]) + "_nc"
-                  + str(config["n_clients"]) + "_seed" + str(config["random_seed"]))
+p_short = "ma" if config["protocol"] == "model_averaging" else "ga"
+t_short = "cls" if config["task"] == "classification" else config["task"][:4]
+d_short = config["dataset"].replace("label_permuted", "lp").replace("rotated", "rot").replace("gaussian", "gauss")
+config["name"] = (config["name"] + config["algorithm"] + "_" + p_short + "_" + d_short + "_"
+                  + config["model"][:5] + "_" + t_short + "_b" + str(config["batch_size"]) + "_nc"
+                  + str(config["n_clients"]) + "_nm" + str(config["n_models"]) + "_s" + str(config["random_seed"]))
 
 gpu_num = int(args.gpu)
 device = torch.device("cuda:" + str(gpu_num) if torch.cuda.is_available() and gpu_num > -1 else "cpu")

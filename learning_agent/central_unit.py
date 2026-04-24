@@ -209,9 +209,15 @@ class CentralUnit:
             ).clone()
         return blended_weights, cluster_scores
 
-    def _create_shared_noise_inputs(self):
+    def _create_shared_noise_inputs(self, c_round=0):
         input_shape = self.clients[0].input_shape
-        shared_inputs = torch.randn((self.custom_noise_samples,) + input_shape, device=self.device)
+        rng = torch.Generator(device=self.device)
+        rng.manual_seed(42 + c_round)
+        shared_inputs = torch.randn(
+            (self.custom_noise_samples,) + input_shape, 
+            generator=rng, 
+            device=self.device
+        )
         return shared_inputs
 
     def test(self):
@@ -655,13 +661,22 @@ class CentralUnit:
             cluster_average_weights = [self._get_average_weights(cluster_client_indices[0])]
 
             if should_refresh_clusters:
-                shared_inputs = self._create_shared_noise_inputs()
+                shared_inputs = self._create_shared_noise_inputs(c_round=c_round)
                 embeddings = []
                 for client in self.clients:
                     embedding = client.compute_functional_embedding(shared_inputs=shared_inputs, device=self.device)
-                    embeddings.append(embedding.detach().cpu().numpy())
+                    embeddings.append(embedding.detach().cpu().to(torch.float64).numpy())
 
                 similarity_matrix = cosine_similarity_matrix(embeddings)
+                global_logger.info("round {}: sim_matrix mean={:.4f} std={:.4f} min={:.4f} max={:.4f} | threshold={:.4f} edges={}".format(
+                    c_round,
+                    similarity_matrix.mean(),
+                    similarity_matrix.std(),
+                    similarity_matrix.min(),
+                    similarity_matrix.max(),
+                    threshold if threshold is not None else -1,
+                    graph_num_edges
+                ))
                 self.smoothed_similarity_matrix = smooth_similarity_matrix(
                     similarity_matrix,
                     self.smoothed_similarity_matrix,

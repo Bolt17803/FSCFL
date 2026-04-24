@@ -154,7 +154,7 @@ def compute_mean_update_norm(cluster):
 
 
 def cosine_similarity_matrix(embeddings):
-    embeddings = np.asarray(embeddings, dtype=np.float64)
+    embeddings = np.array(embeddings, dtype=np.float64)
     norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
     norms = np.clip(norms, a_min=1e-12, a_max=None)
     normalized_embeddings = embeddings / norms
@@ -199,6 +199,7 @@ def louvain_cluster_clients(graph, n_clients, random_seed=0):
         import networkx as nx
         communities = nx.community.louvain_communities(graph, weight="weight", seed=random_seed)
     except AttributeError:
+        print("AttributeError: louvain_communities not found, using greedy_modularity_communities")
         import networkx as nx
         communities = nx.community.greedy_modularity_communities(graph, weight="weight")
 
